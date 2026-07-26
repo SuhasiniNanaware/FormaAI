@@ -20,4 +20,12 @@ router.post(
 
 );
 
+router.get(
+
+    "/verify/:token",
+
+    authController.verifyEmail
+
+);
+
 module.exports = router;

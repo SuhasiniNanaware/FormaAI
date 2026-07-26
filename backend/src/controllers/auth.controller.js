@@ -4,6 +4,8 @@ const ApiResponse = require("../utils/ApiResponse");
 
 const authService = require("../services/auth.service");
 
+const VerificationToken = require("../models/VerificationToken");
+
 exports.register = async (req, res) => {
 
     try {
@@ -79,6 +81,72 @@ exports.register = async (req, res) => {
             )
 
         );
+
+    }
+
+};
+
+exports.verifyEmail = async (req, res) => {
+
+    try {
+
+        const { token } = req.params;
+
+        const verifyToken =
+            await VerificationToken.findOne({ token });
+
+        if (!verifyToken) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message: "Invalid Token",
+
+            });
+
+        }
+
+        if (verifyToken.expiresAt < Date.now()) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message: "Token Expired",
+
+            });
+
+        }
+
+        const User = require("../models/User");
+
+        const user =
+            await User.findById(verifyToken.userId);
+
+        user.isVerified = true;
+
+        await user.save();
+
+        await VerificationToken.deleteOne({
+
+            _id: verifyToken._id,
+
+        });
+
+        return res.redirect(
+            `${process.env.CLIENT_URL}/email-verified`
+        );
+
+    } catch (error) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: error.message,
+
+        });
 
     }
 
