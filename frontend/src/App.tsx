@@ -26,6 +26,7 @@ import { HelpPage } from './pages/Help/HelpPage';
 import { AboutPage } from './pages/About/AboutPage';
 import { NotFoundPage } from './pages/NotFound/NotFoundPage';
 import { AIAssistantPage } from './pages/AIAssistantPage/AIAssistantPage';
+import EmailVerifiedPage from './pages/EmailVerifiedPage/EmailVerifiedPage';
 
 // Authenticated Dashboard Shell Layout
 const DashboardLayout: React.FC = () => {
@@ -73,6 +74,7 @@ export function App() {
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/email-verified" element={<EmailVerifiedPage />} />
           </Route>
 
           {/* Fallback 404 Route */}

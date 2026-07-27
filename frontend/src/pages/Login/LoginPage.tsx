@@ -3,16 +3,40 @@ import { useNavigate } from 'react-router-dom';
 import { Sparkles, Mail, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { authService } from '../../services/authService';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Wire up actual authentication here
-    navigate('/dashboard');
+const handleLogin = async (e: React.FormEvent) => {
+     e.preventDefault();
+
+try {
+
+  const response = await authService.login({
+    email,
+    password,
+  });
+
+ console.log(response);
+
+localStorage.setItem(
+  "user",
+  JSON.stringify(response.data.data)
+);
+
+navigate("/dashboard");
+
+} catch (error: any) {
+
+  alert(
+    error.response?.data?.message ||
+    "Login failed"
+  );
+
+}
   };
 
   return (
