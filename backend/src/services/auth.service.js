@@ -49,11 +49,35 @@ const registerUser = async (username, email, password) => {
     return user;
 };
 
+const loginUser = async (email, password) => {
 
+const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+        throw new Error("Invalid email or password");
+    }
+
+    if (!user.isVerified) {
+        throw new Error("Please verify your email before logging in");
+    }
+
+    const isMatch = await user.comparePassword(password);
+
+    if (!isMatch) {
+        throw new Error("Invalid email or password");
+    }
+
+    return {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        verified: user.isVerified
+    };
+};
 
 
 module.exports = {
 
-    registerUser
+    registerUser,
+    loginUser,
 
 };

@@ -151,3 +151,33 @@ exports.verifyEmail = async (req, res) => {
     }
 
 };
+
+exports.login = async (req, res) => {
+    try {
+
+        const { email, password } = req.body;
+
+        const user = await authService.loginUser(
+            email,
+            password
+        );
+
+        return res.status(200).json(
+            new ApiResponse(
+                true,
+                "Login Successful",
+                user
+            )
+        );
+
+    } catch (error) {
+
+        return res.status(400).json(
+            new ApiResponse(
+                false,
+                error.message
+            )
+        );
+
+    }
+};

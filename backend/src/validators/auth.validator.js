@@ -19,3 +19,16 @@ exports.registerValidation = [
         .withMessage("Password must be at least 6 characters")
 
 ];
+
+exports.loginValidation = [
+
+    body("email")
+        .trim()
+        .isEmail()
+        .withMessage("Invalid email"),
+
+    body("password")
+        .notEmpty()
+        .withMessage("Password is required")
+
+];
