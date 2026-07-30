@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   User, 
   Mail, 
@@ -15,10 +15,24 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 
 export const ProfilePage: React.FC = () => {
-  const [name, setName] = useState('Alex Rivera');
-  const [email, setEmail] = useState('alex.rivera@forma.ai');
-  const [bio, setBio] = useState('Product Designer & Form Architect');
+ const [name, setName] = useState('');
+const [email, setEmail] = useState('');
+const [bio, setBio] = useState('Product Designer & Form Architect');
   const [saved, setSaved] = useState(false);
+  useEffect(() => {
+
+  const storedUser = localStorage.getItem("user");
+
+  if (storedUser) {
+
+    const user = JSON.parse(storedUser);
+
+    setName(user.username || "");
+    setEmail(user.email || "");
+
+  }
+
+}, []);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
