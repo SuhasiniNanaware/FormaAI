@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   User, 
   Mail, 
@@ -9,29 +10,34 @@ import {
   Calendar,
   Layers,
   FileText
-} from 'lucide-react';
+} 
+from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 
 export const ProfilePage: React.FC = () => {
- const [name, setName] = useState('');
+const navigate = useNavigate();
+const [name, setName] = useState('');
 const [email, setEmail] = useState('');
 const [bio, setBio] = useState('');
-  const [saved, setSaved] = useState(false);
+const [saved, setSaved] = useState(false);
+
   useEffect(() => {
+  try {
+    const storedUser = localStorage.getItem("user");
 
-  const storedUser = localStorage.getItem("user");
-
-  if (storedUser) {
+    if (!storedUser || storedUser === "undefined") {
+      return;
+    }
 
     const user = JSON.parse(storedUser);
 
-    setName(user.username || "");
-    setEmail(user.email || "");
-
+    setName(user?.username || "");
+    setEmail(user?.email || "");
+  } catch (error) {
+    console.error("Invalid user data in localStorage:", error);
   }
-
 }, []);
 
   const handleSave = (e: React.FormEvent) => {
@@ -39,6 +45,13 @@ const [bio, setBio] = useState('');
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
+
+  const handleLogout = () => {
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+
+  navigate("/login");
+};
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 py-4">
@@ -149,11 +162,21 @@ const [bio, setBio] = useState('');
             </div>
 
             <div className="pt-2 flex items-center justify-end gap-3">
-              <Button type="submit" size="sm">
-                {saved && <Check className="w-4 h-4 mr-1 text-emerald-400" />}
-                {saved ? 'Changes Saved!' : 'Save Profile Changes'}
-              </Button>
-            </div>
+  <Button
+    type="button"
+    size="sm"
+    onClick={handleLogout}
+    className="bg-red-600 hover:bg-red-700"
+  >
+    Logout
+  </Button>
+
+  <Button type="submit" size="sm">
+    {saved && <Check className="w-4 h-4 mr-1 text-emerald-400" />}
+    {saved ? "Changes Saved!" : "Save Profile Changes"}
+  </Button>
+   </div>
+
           </form>
         </Card>
       </div>

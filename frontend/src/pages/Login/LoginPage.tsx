@@ -20,11 +20,11 @@ try {
     password,
   });
 
- console.log(response);
+console.log(response);
 
 localStorage.setItem(
   "user",
-  JSON.stringify(response.data.data)
+  JSON.stringify(response.data)
 );
 
 navigate("/dashboard");
