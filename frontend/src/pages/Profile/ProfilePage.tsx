@@ -17,7 +17,7 @@ import { Badge } from '../../components/ui/Badge';
 export const ProfilePage: React.FC = () => {
  const [name, setName] = useState('');
 const [email, setEmail] = useState('');
-const [bio, setBio] = useState('Product Designer & Form Architect');
+const [bio, setBio] = useState('');
   const [saved, setSaved] = useState(false);
   useEffect(() => {
 
