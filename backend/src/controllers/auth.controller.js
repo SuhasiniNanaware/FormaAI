@@ -162,6 +162,18 @@ exports.login = async (req, res) => {
             password
         );
 
+        // httpOnly cookie for browser clients (cookie-parser is already
+        // wired into app.js). The token is ALSO returned in the JSON body
+        // below so non-browser clients (Postman, a mobile app, tests) that
+        // can't rely on cookies can send it as a Bearer header instead -
+        // authMiddleware accepts either.
+        res.cookie("token", user.token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
         return res.status(200).json(
             new ApiResponse(
                 true,

@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const VerificationToken = require("../models/VerificationToken");
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 const mailService = require("./mail.service");
 
 const registerUser = async (username, email, password) => {
@@ -49,6 +50,21 @@ const registerUser = async (username, email, password) => {
     return user;
 };
 
+// Signs a JWT carrying just the user id - handlers that need more (username,
+// email, role) look it up via req.user.id rather than trusting a stale copy
+// baked into the token.
+const generateAuthToken = (user) => {
+    if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is not configured on the server");
+    }
+
+    return jwt.sign(
+        { id: user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+    );
+};
+
 const loginUser = async (email, password) => {
 
 const user = await User.findOne({ email }).select("+password");
@@ -66,11 +82,14 @@ const user = await User.findOne({ email }).select("+password");
         throw new Error("Invalid email or password");
     }
 
+    const token = generateAuthToken(user);
+
     return {
         id: user._id,
         username: user.username,
         email: user.email,
-        verified: user.isVerified
+        verified: user.isVerified,
+        token
     };
 };
 
@@ -79,5 +98,6 @@ module.exports = {
 
     registerUser,
     loginUser,
+    generateAuthToken,
 
 };
