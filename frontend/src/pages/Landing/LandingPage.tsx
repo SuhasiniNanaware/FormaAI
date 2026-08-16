@@ -37,7 +37,6 @@ export const LandingPage: React.FC = () => {
 
   // Exact paths to your downloaded GIFs inside public/ folder
   const botWavingGif = "/Robot Says Hi.gif"; 
-  const aiSupportGif = "/Live chatbot.gif"; 
 
   useEffect(() => {
     const hasSeenIntro = sessionStorage.getItem('forma_intro_seen');
@@ -381,7 +380,6 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>© {new Date().getFullYear()} FormaAI. All rights reserved.</p>
           <div className="flex items-center gap-6 text-slate-400">
-            <span className="hover:text-white cursor-pointer" onClick={() => navigate('/about')}>About</span>
             <span className="hover:text-white cursor-pointer" onClick={() => navigate('/help')}>Docs & Help</span>
             <span className="hover:text-white cursor-pointer" onClick={() => navigate('/settings')}>Settings</span>
           </div>

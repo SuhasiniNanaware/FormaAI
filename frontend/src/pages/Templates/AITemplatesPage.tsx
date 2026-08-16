@@ -4,13 +4,7 @@ import {
   Sparkles, 
   Search, 
   ArrowRight, 
-  LayoutTemplate, 
-  Briefcase, 
-  GraduationCap, 
-  Users, 
-  ShoppingCart, 
-  Headphones, 
-  Calendar 
+  LayoutTemplate
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';

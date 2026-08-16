@@ -10,38 +10,27 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-const handleLogin = async (e: React.FormEvent) => {
-     e.preventDefault();
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-try {
+    try {
+      const response = await authService.login({ email, password });
+      const payload = response?.data ?? response;
+      const user = payload?.data ?? payload;
 
-  const response = await authService.login({
-    email,
-    password,
-  });
+      if (user?.token) {
+        localStorage.setItem('token', user.token);
+      }
 
- console.log(response);
-
-localStorage.setItem(
-  "user",
-  JSON.stringify(response.data.data)
-);
-
-navigate("/dashboard");
-
-} catch (error: any) {
-
-  alert(
-    error.response?.data?.message ||
-    "Login failed"
-  );
-
-}
+      localStorage.setItem('user', JSON.stringify(user));
+      navigate('/dashboard');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Login failed');
+    }
   };
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      {/* Ambient Background Orbs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-[140px] pointer-events-none animate-ambient" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[140px] pointer-events-none animate-ambient" style={{ animationDelay: '3s' }} />
 

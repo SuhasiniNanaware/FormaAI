@@ -2,9 +2,24 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Sparkles, Bell, Search, Command } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { authService } from '../../services/authService';
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
+  const user = (() => {
+    try {
+      const stored = localStorage.getItem('user');
+      if (!stored) return null;
+      const parsed = JSON.parse(stored);
+      return parsed;
+    } catch {
+      return null;
+    }
+  })();
+  const userInitial = (user?.username || user?.email || 'U')
+    .trim()
+    .charAt(0)
+    .toUpperCase();
 
   return (
     <header className="h-16 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-xl px-6 flex items-center justify-between sticky top-0 z-40">
@@ -49,14 +64,25 @@ export const Navbar: React.FC = () => {
         </button>
 
         <div className="h-4 w-px bg-slate-800 mx-1" />
-
+ 
         <button
           onClick={() => navigate('/profile')}
           className="flex items-center gap-2 p-1 rounded-xl border border-slate-800 hover:border-indigo-500/40 transition bg-slate-900/50"
         >
-          <div className="w-7 h-7 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-300 font-semibold text-xs">
-            AR
+          <div className="w-7 h-7 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-300 font-semibold text-xs overflow-hidden">
+            {user?.avatar ? (
+              <img src={user.avatar} alt="Profile avatar" className="w-full h-full object-cover" />
+            ) : (
+              userInitial
+            )}
           </div>
+        </button>
+
+        <button
+          onClick={() => { authService.logout(); navigate('/login', { replace: true }); }}
+          className="ml-2 px-3 py-1 text-xs rounded-lg bg-slate-900/40 border border-slate-800 text-slate-300 hover:bg-slate-900"
+        >
+          Logout
         </button>
       </div>
     </header>

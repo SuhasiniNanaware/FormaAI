@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
   User, 
   Mail, 
@@ -13,32 +13,91 @@ import {
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
+import { authService } from '../../services/authService';
 
 export const ProfilePage: React.FC = () => {
- const [name, setName] = useState('');
-const [email, setEmail] = useState('');
-const [bio, setBio] = useState('Product Designer & Form Architect');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [bio, setBio] = useState('');
+  const [avatar, setAvatar] = useState('');
   const [saved, setSaved] = useState(false);
-  useEffect(() => {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const storedUser = localStorage.getItem("user");
+  const fetchProfile = async () => {
+    try {
+      const res = await authService.getProfile();
+      const payload = res?.data ?? res;
+      setName(payload?.username || '');
+      setEmail(payload?.email || '');
+      setBio(payload?.bio || '');
+      setAvatar(payload?.avatar || '');
+      localStorage.setItem('user', JSON.stringify(payload));
+      return;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.warn('Profile fetch failed, falling back to local snapshot', errorMessage);
+    }
 
-  if (storedUser) {
-
-    const user = JSON.parse(storedUser);
-
-    setName(user.username || "");
-    setEmail(user.email || "");
-
-  }
-
-}, []);
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    try {
+      const snapshot = localStorage.getItem('user');
+      if (snapshot) {
+        const parsed = JSON.parse(snapshot);
+        setName(parsed?.username || '');
+        setEmail(parsed?.email || '');
+        setBio(parsed?.bio || '');
+        setAvatar(parsed?.avatar || '');
+      }
+    } catch (ex) {
+      console.error('Failed to read local user snapshot', ex);
+    }
   };
+
+  React.useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await authService.updateProfile({ username: name, email, bio, avatar });
+      const payload = res?.data ?? res;
+      setSaved(true);
+      localStorage.setItem('user', JSON.stringify(payload));
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      alert('Failed to save profile');
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = String(reader.result || '');
+      setAvatar(dataUrl);
+      try {
+        const res = await authService.updateProfile({ username: name, email, bio, avatar: dataUrl });
+        const payload = res?.data ?? res;
+        localStorage.setItem('user', JSON.stringify(payload));
+      } catch (error) {
+        console.error('Failed to save avatar', error);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    window.location.replace('/login');
+  };
+
+  const initials = name ? name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() : 'U';
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 py-4">
@@ -54,12 +113,17 @@ const [bio, setBio] = useState('Product Designer & Form Architect');
         {/* Left Column: Avatar & Summary Card */}
         <Card glow className="p-6 border-slate-800 lg:col-span-1 flex flex-col items-center text-center space-y-4">
           <div className="relative group">
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-0.5 shadow-xl shadow-indigo-500/10">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-indigo-400 text-2xl font-bold">
-                {name.split(' ').map((n) => n[0]).join('')}
-              </div>
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-0.5 shadow-xl shadow-indigo-500/10 overflow-hidden">
+              {avatar ? (
+                <img src={avatar} alt="Profile avatar" className="w-full h-full object-cover rounded-[14px]" />
+              ) : (
+                <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-indigo-400 text-2xl font-bold">
+                  {initials}
+                </div>
+              )}
             </div>
-            <button className="absolute bottom-0 right-0 p-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-indigo-500 transition shadow-lg">
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+            <button type="button" onClick={handleAvatarClick} className="absolute bottom-0 right-0 p-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-indigo-500 transition shadow-lg">
               <Camera className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -101,9 +165,12 @@ const [bio, setBio] = useState('Product Designer & Form Architect');
         <Card className="p-6 border-slate-800 lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between border-b border-slate-800 pb-4">
             <h3 className="text-base font-bold text-white">Personal Details</h3>
-            <span className="text-xs text-slate-500 flex items-center gap-1">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" /> Verified Account
-            </span>
+            <div className="flex items-center gap-3">
+              <button onClick={handleLogout} className="text-xs text-slate-400 hover:text-white px-3 py-1 rounded-lg border border-slate-800/60">Logout</button>
+              <span className="text-xs text-slate-500 flex items-center gap-1">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" /> Verified Account
+              </span>
+            </div>
           </div>
 
           <form onSubmit={handleSave} className="space-y-5">

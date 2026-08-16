@@ -11,7 +11,6 @@ import {
   Settings,
   User,
   HelpCircle,
-  Info,
   Sparkles,
 } from 'lucide-react';
 
@@ -29,7 +28,6 @@ const subLinks = [
   { to: '/profile', label: 'Profile', icon: User },
   { to: '/settings', label: 'Settings', icon: Settings },
   { to: '/help', label: 'Help & Docs', icon: HelpCircle },
-  { to: '/about', label: 'About Forma AI', icon: Info },
 ];
 
 export const Sidebar: React.FC = () => {

@@ -9,6 +9,7 @@ import { LandingPage } from './pages/Landing/LandingPage';
 import { AIIntroPage } from './pages/AIIntro/AIIntroPage';
 import { LoginPage } from './pages/Login/LoginPage';
 import { RegisterPage } from './pages/Register/RegisterPage';
+import { EmailVerifiedPage } from './pages/EmailVerified/EmailVerifiedPage';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { CreateFormPage } from './pages/CreateForm/CreateFormPage';
 import { AIProcessingPage } from './pages/AIProcessing/AIProcessingPage';
@@ -23,10 +24,8 @@ import { SettingsPage } from './pages/Settings/SettingsPage';
 import { AITemplatesPage } from './pages/Templates/AITemplatesPage';
 import { NotificationsPage } from './pages/Notifications/NotificationsPage';
 import { HelpPage } from './pages/Help/HelpPage';
-import { AboutPage } from './pages/About/AboutPage';
 import { NotFoundPage } from './pages/NotFound/NotFoundPage';
 import { AIAssistantPage } from './pages/AIAssistantPage/AIAssistantPage';
-import EmailVerifiedPage from './pages/EmailVerifiedPage/EmailVerifiedPage';
 
 // Authenticated Dashboard Shell Layout
 const DashboardLayout: React.FC = () => {
@@ -53,6 +52,7 @@ export function App() {
           <Route path="/intro" element={<AIIntroPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/email-verified" element={<EmailVerifiedPage />} />
 
           {/* Standalone Interactive AI Assistant & Preview Routes */}
           <Route path="/ai-assistant" element={<AIAssistantPage />} />
@@ -73,8 +73,6 @@ export function App() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/help" element={<HelpPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/email-verified" element={<EmailVerifiedPage />} />
           </Route>
 
           {/* Fallback 404 Route */}
