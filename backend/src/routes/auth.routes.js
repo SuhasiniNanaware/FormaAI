@@ -26,4 +26,10 @@ router.get(
     authController.verifyEmail
 );
 
+// Profile endpoints
+const authMiddleware = require('../middleware/auth.middleware');
+
+router.get('/me', authMiddleware, authController.getProfile);
+router.put('/me', authMiddleware, authController.updateProfile);
+
 module.exports = router;
