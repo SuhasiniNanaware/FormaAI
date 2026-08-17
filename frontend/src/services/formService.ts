@@ -1,13 +1,62 @@
+import axios from 'axios';
 import type { Form, FormSubmission } from '../types/form';
 import { mockForms, mockSubmissions } from '../utils/mockData';
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const API = axios.create({
+  baseURL: 'http://localhost:5000/api/forms',
+});
+
+const delay = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 export const formService = {
   async getAllForms(): Promise<Form[]> {
-    await delay(300);
-    return [...mockForms];
-  },
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    throw new Error('Authentication token not found');
+  }
+
+  const response = await API.get('/my-forms', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const backendForms = response.data.data || [];
+
+  return backendForms.map((form: any): Form => ({
+    id: form._id,
+    title: form.title,
+    description: form.description || '',
+    status: 'draft',
+    questions: [],
+    theme: {
+      primaryColor: '#6366f1',
+      backgroundColor: '#020617',
+      cardStyle: 'glass',
+      borderRadius: 'md',
+      fontFamily: 'Inter',
+    },
+    settings: {
+      allowAnonymous: true,
+      collectEmail: true,
+      limitOneResponse: false,
+      showProgressBar: true,
+      customSuccessMessage: 'Thank you for your submission!',
+    },
+    createdAt: form.createdAt,
+    updatedAt: form.updatedAt,
+    responsesCount: form.submissions || 0,
+    completionRate: 0,
+    viewsCount: 0,
+    slug: form.title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, ''),
+  }));
+},
 
   async getFormById(id: string): Promise<Form | null> {
     await delay(200);
