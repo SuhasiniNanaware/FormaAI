@@ -37,7 +37,6 @@ export const LandingPage: React.FC = () => {
 
   // Exact paths to your downloaded GIFs inside public/ folder
   const botWavingGif = "/Robot Says Hi.gif"; 
-  const aiSupportGif = "/Live chatbot.gif"; 
 
   useEffect(() => {
     const hasSeenIntro = sessionStorage.getItem('forma_intro_seen');

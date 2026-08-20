@@ -3,6 +3,8 @@ const VerificationToken = require("../models/VerificationToken");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const mailService = require("./mail.service");
+const PasswordResetToken = require("../models/PasswordResetToken");
+
 
 const registerUser = async (username, email, password) => {
     const existingUser = await User.findOne({ email });
@@ -80,8 +82,67 @@ const loginUser = async (email, password) => {
     };
 };
 
+const createPasswordResetToken = async (email) => {
+  const user = await User.findOne({ email });
+
+  // Don't reveal whether an email exists.
+  if (!user) {
+    return;
+  }
+
+  await PasswordResetToken.deleteMany({
+    userId: user._id,
+  });
+
+  const token = crypto.randomBytes(32).toString("hex");
+
+  await PasswordResetToken.create({
+    userId: user._id,
+    token,
+    expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+  });
+
+  const resetLink =
+    `${process.env.CLIENT_URL}/reset-password/${token}`;
+
+  await mailService.sendPasswordResetEmail(
+    user.email,
+    user.username,
+    resetLink
+  );
+};
+
+
+const resetPassword = async (token, newPassword) => {
+  const resetToken = await PasswordResetToken.findOne({
+    token,
+  });
+
+  if (!resetToken) {
+    throw new Error("Invalid or expired reset link");
+  }
+
+  if (resetToken.expiresAt < new Date()) {
+    await resetToken.deleteOne();
+    throw new Error("Reset link has expired");
+  }
+
+  const user = await User.findById(resetToken.userId);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  await resetToken.deleteOne();
+};
+
 module.exports = {
     registerUser,
     loginUser,
     generateAuthToken,
+    createPasswordResetToken,
+    resetPassword,
 };

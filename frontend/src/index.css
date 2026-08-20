@@ -63,3 +63,45 @@
 .animate-ambient {
   animation: ambientGlow 12s infinite ease-in-out;
 }
+
+/* =========================================================
+   FORMA THEME SYSTEM
+   ========================================================= */
+
+html.forma-dark {
+  color-scheme: dark;
+}
+
+html.forma-midnight {
+  color-scheme: dark;
+  background: #020204;
+}
+
+html.forma-midnight body {
+  background: #020204;
+}
+
+html.forma-midnight .bg-slate-950 {
+  background-color: #000000 !important;
+}
+
+html.forma-midnight .bg-slate-900 {
+  background-color: #030305 !important;
+}
+
+html.forma-midnight .bg-slate-900\/80 {
+  background-color: rgba(3, 3, 5, 0.9) !important;
+}
+
+html.forma-midnight .bg-slate-900\/40 {
+  background-color: rgba(3, 3, 5, 0.7) !important;
+}
+
+html.forma-midnight .border-slate-800 {
+  border-color: #17171c !important;
+}
+
+html.forma-light {
+  color-scheme: light;
+  background: #f8fafc;
+}

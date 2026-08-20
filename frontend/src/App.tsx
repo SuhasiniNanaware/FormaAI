@@ -1,6 +1,15 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import ReactDOM from 'react-dom/client';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Outlet,
+} from 'react-router-dom';
+
 import { FormProvider } from './context/FormContext';
+import { LanguageProvider } from './context/LanguageContext';
+
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
 
@@ -26,63 +35,214 @@ import { HelpPage } from './pages/Help/HelpPage';
 import { AboutPage } from './pages/About/AboutPage';
 import { NotFoundPage } from './pages/NotFound/NotFoundPage';
 import { AIAssistantPage } from './pages/AIAssistantPage/AIAssistantPage';
-import EmailVerifiedPage from './pages/EmailVerifiedPage/EmailVerifiedPage';
 
-// Authenticated Dashboard Shell Layout
+import EmailVerifiedPage from './pages/EmailVerifiedPage/EmailVerifiedPage';
+import ForgotPasswordPage from './pages/ForgotPassword/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPassword/ResetPasswordPage';
+
+/*
+ * ======================================================
+ * AUTHENTICATED DASHBOARD SHELL
+ * ======================================================
+ */
+
 const DashboardLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+      
       <Navbar />
+
       <div className="flex flex-1">
+        
         <Sidebar />
+
         <main className="flex-1 p-6 overflow-y-auto max-w-7xl mx-auto w-full">
           <Outlet />
         </main>
+
       </div>
+
     </div>
   );
 };
+
+/*
+ * ======================================================
+ * APP
+ * ======================================================
+ */
 
 export function App() {
   return (
     <FormProvider>
       <Router>
+
         <Routes>
-          {/* Public / Auth Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/intro" element={<AIIntroPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
 
-          {/* Standalone Interactive AI Assistant & Preview Routes */}
-          <Route path="/ai-assistant" element={<AIAssistantPage />} />
-          <Route path="/preview" element={<PreviewPage />} />
+          {/* ==================================================
+              PUBLIC / AUTH ROUTES
+          ================================================== */}
 
-          {/* Authenticated Dashboard Routes */}
+          <Route
+            path="/"
+            element={<LandingPage />}
+          />
+
+          <Route
+            path="/intro"
+            element={<AIIntroPage />}
+          />
+
+          <Route
+            path="/login"
+            element={<LoginPage />}
+          />
+
+          <Route
+            path="/register"
+            element={<RegisterPage />}
+          />
+
+          <Route
+            path="/forgot-password"
+            element={<ForgotPasswordPage />}
+          />
+
+          {/* ==================================================
+              STANDALONE INTERACTIVE ROUTES
+          ================================================== */}
+
+          <Route
+            path="/ai-assistant"
+            element={<AIAssistantPage />}
+          />
+
+          <Route
+            path="/preview"
+            element={<PreviewPage />}
+          />
+
+          {/* ==================================================
+              AUTHENTICATED DASHBOARD ROUTES
+          ================================================== */}
+
           <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/create-form" element={<CreateFormPage />} />
-            <Route path="/ai-processing" element={<AIProcessingPage />} />
-            <Route path="/form-builder" element={<FormBuilderPage />} />
-            <Route path="/templates" element={<AITemplatesPage />} />
-            <Route path="/publish" element={<PublishPage />} />
-            <Route path="/forms" element={<MyFormsPage />} />
-            <Route path="/responses" element={<ResponsesPage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
-            <Route path="/help" element={<HelpPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/email-verified" element={<EmailVerifiedPage />} />
+
+            <Route
+              path="/dashboard"
+              element={<DashboardPage />}
+            />
+
+            <Route
+              path="/create-form"
+              element={<CreateFormPage />}
+            />
+
+            <Route
+              path="/ai-processing"
+              element={<AIProcessingPage />}
+            />
+
+            <Route
+              path="/form-builder"
+              element={<FormBuilderPage />}
+            />
+
+            <Route
+              path="/templates"
+              element={<AITemplatesPage />}
+            />
+
+            <Route
+              path="/publish"
+              element={<PublishPage />}
+            />
+
+            <Route
+              path="/forms"
+              element={<MyFormsPage />}
+            />
+
+            <Route
+              path="/responses"
+              element={<ResponsesPage />}
+            />
+
+            <Route
+              path="/analytics"
+              element={<AnalyticsPage />}
+            />
+
+            <Route
+              path="/profile"
+              element={<ProfilePage />}
+            />
+
+            <Route
+              path="/settings"
+              element={<SettingsPage />}
+            />
+
+            <Route
+              path="/notifications"
+              element={<NotificationsPage />}
+            />
+
+            <Route
+              path="/help"
+              element={<HelpPage />}
+            />
+
+            <Route
+              path="/about"
+              element={<AboutPage />}
+            />
+
+            <Route
+              path="/email-verified"
+              element={<EmailVerifiedPage />}
+            />
+
+            <Route
+              path="/reset-password/:token"
+              element={<ResetPasswordPage />}
+            />
+
           </Route>
 
-          {/* Fallback 404 Route */}
-          <Route path="*" element={<NotFoundPage />} />
+          {/* ==================================================
+              FALLBACK 404
+          ================================================== */}
+
+          <Route
+            path="*"
+            element={<NotFoundPage />}
+          />
+
         </Routes>
+
       </Router>
     </FormProvider>
   );
 }
+
+/*
+ * ======================================================
+ * ROOT RENDER
+ *
+ * LanguageProvider is intentionally outside App so that
+ * Navbar, Sidebar and every page can use useLanguage().
+ * ======================================================
+ */
+
+ReactDOM.createRoot(
+  document.getElementById('root')!
+).render(
+  <React.StrictMode>
+    <LanguageProvider>
+      <App />
+    </LanguageProvider>
+  </React.StrictMode>
+);
 
 export default App;

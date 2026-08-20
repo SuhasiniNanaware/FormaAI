@@ -1,10 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Sparkles, Bell, Search, Command } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
+const [initials, setInitials] = useState("U");
+
+
+
+useEffect(() => {
+  try {
+    const storedUser = localStorage.getItem("user");
+
+    if (!storedUser || storedUser === "undefined") return;
+
+    const user = JSON.parse(storedUser);
+
+    const username = user?.username || "";
+
+    const letters = username
+      .trim()
+      .split(/\s+/)
+      .map((part: string) => part.charAt(0).toUpperCase())
+      .slice(0, 2)
+      .join("");
+
+    setInitials(letters || "U");
+  } catch (err) {
+    console.error(err);
+  }
+}, []);
+
 
   return (
     <header className="h-16 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-xl px-6 flex items-center justify-between sticky top-0 z-40">
@@ -54,9 +81,9 @@ export const Navbar: React.FC = () => {
           onClick={() => navigate('/profile')}
           className="flex items-center gap-2 p-1 rounded-xl border border-slate-800 hover:border-indigo-500/40 transition bg-slate-900/50"
         >
-          <div className="w-7 h-7 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-300 font-semibold text-xs">
-            AR
-          </div>
+        <div className="w-7 h-7 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-300 font-semibold text-xs">
+  {initials}
+</div>
         </button>
       </div>
     </header>

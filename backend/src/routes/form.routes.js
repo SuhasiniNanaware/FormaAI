@@ -12,11 +12,20 @@ const {
   generateFormValidation,
 } = require("../validators/form.validator");
 
-router.get("/", formController.getAllForms);
+// Get all forms
+router.get(
+  "/",
+  formController.getAllForms
+);
 
-// AI generation: must be signed in (so the rate limiter can key on user id
-// and forms are attributed to an owner), rate-limited (it costs real API
-// spend per call), and prompt-length validated before it ever reaches Gemini.
+// Get forms belonging to logged-in user
+router.get(
+  "/my-forms",
+  requireAuth,
+  formController.getMyForms
+);
+
+// Generate form using AI
 router.post(
   "/generate",
   requireAuth,
@@ -25,16 +34,45 @@ router.post(
   formController.generateFormWithAI
 );
 
-router.post("/", requireAuth, createFormValidation, formController.createForm);
+// Create form
+router.post(
+  "/",
+  requireAuth,
+  createFormValidation,
+  formController.createForm
+);
 
-router.get("/:id", formController.getFormById);
+// Get form by ID / slug
+router.get(
+  "/:id",
+  formController.getFormById
+);
 
-router.put("/:id", requireAuth, formController.updateForm);
+// Update form
+router.put(
+  "/:id",
+  requireAuth,
+  formController.updateForm
+);
 
-router.delete("/:id", requireAuth, formController.deleteForm);
+// Delete form
+router.delete(
+  "/:id",
+  requireAuth,
+  formController.deleteForm
+);
 
-router.get("/:id/responses", formController.getFormResponses);
+// Get responses
+router.get(
+  "/:id/responses",
+  formController.getFormResponses
+);
 
-router.post("/:id/responses", submitResponseValidation, formController.submitFormResponse);
+// Submit response
+router.post(
+  "/:id/responses",
+  submitResponseValidation,
+  formController.submitFormResponse
+);
 
 module.exports = router;

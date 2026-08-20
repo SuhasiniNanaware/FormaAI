@@ -3,6 +3,7 @@ import type { Form, FormSubmission } from '../types/form';
 
 const API = axios.create({
   baseURL: 'http://localhost:5000/api/forms',
+  timeout: 15000,
 });
 
 const getAuthHeaders = () => {
@@ -17,160 +18,193 @@ const getAuthHeaders = () => {
   };
 };
 
-const mapBackendForm = (form: any): Form => ({
-  id: form._id,
-  title: form.title,
-  description: form.description || '',
-  status: form.status || 'draft',
-  questions: form.questions || [],
+/**
+ * Converts MongoDB Form documents into the frontend Form type.
+ */
+const normalizeForm = (form: any): Form => {
+  return {
+    id: form._id || form.id,
+    title: form.title || '',
+    description: form.description || '',
+    status: form.status || 'draft',
 
-  theme: form.theme || {
-    primaryColor: '#8b5cf6',
-    backgroundColor: '#020617',
-    cardStyle: 'glass',
-    borderRadius: 'md',
-    fontFamily: 'Inter',
-  },
+    questions: Array.isArray(form.questions)
+      ? form.questions
+      : [],
 
-  settings: form.settings || {
-    allowAnonymous: true,
-    collectEmail: true,
-    limitOneResponse: false,
-    showProgressBar: true,
-    customSuccessMessage: 'Thank you for your submission!',
-  },
+    theme: form.theme || {
+      primaryColor: '#6366f1',
+      backgroundColor: '#020617',
+      cardStyle: 'glass',
+      borderRadius: 'md',
+      fontFamily: 'Inter',
+    },
 
-  createdAt: form.createdAt,
-  updatedAt: form.updatedAt,
+    settings: form.settings || {
+      allowAnonymous: true,
+      collectEmail: true,
+      limitOneResponse: false,
+      showProgressBar: true,
+      customSuccessMessage: 'Thank you for your submission!',
+    },
 
-  responsesCount:
-    form.responsesCount ?? form.submissions ?? 0,
+    createdAt: form.createdAt,
+    updatedAt: form.updatedAt,
 
-  completionRate: form.completionRate || 0,
-  viewsCount: form.viewsCount || 0,
+    responsesCount: form.responsesCount || 0,
+    completionRate: form.completionRate || 0,
+    viewsCount: form.viewsCount || 0,
 
-  slug:
-    form.slug ||
-    form.title
-      ?.toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, ''),
-});
+    slug:
+      form.slug ||
+      form.title
+        ?.toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, ''),
+  };
+};
 
 export const formService = {
 
-  // Get all forms from backend
+  /**
+   * Get all forms belonging to the logged-in user.
+   */
   async getAllForms(): Promise<Form[]> {
-    const response = await API.get('/', {
+    const response = await API.get('/my-forms', {
       headers: getAuthHeaders(),
     });
 
-    const backendForms = response.data.data || [];
+    const forms = response.data?.data || [];
 
-    return backendForms.map(mapBackendForm);
+    return forms.map(normalizeForm);
   },
 
-  // Get one form from backend
+  /**
+   * Get a single form by MongoDB ID or slug.
+   */
   async getFormById(id: string): Promise<Form | null> {
     try {
       const response = await API.get(`/${id}`);
 
-      return mapBackendForm(response.data.data);
-    } catch (error) {
-      console.error('Failed to fetch form:', error);
-      return null;
+      const form = response.data?.data;
+
+      if (!form) {
+        return null;
+      }
+
+      return normalizeForm(form);
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+
+      throw error;
     }
   },
 
-  // Generate form using real AI backend
-  async generateFormWithAI(prompt: string): Promise<Form> {
-    const response = await API.post(
-      '/generate',
-      { prompt },
-      {
-        headers: getAuthHeaders(),
-      }
-    );
-
-    return mapBackendForm(response.data.data);
-  },
-
-  // Get form responses
-  async getFormResponses(
-    formId: string
-  ): Promise<FormSubmission[]> {
-    const response = await API.get(
-      `/${formId}/responses`,
-      {
-        headers: getAuthHeaders(),
-      }
-    );
-
-    return response.data.data || [];
-  },
-
-  // Submit form response
-  async submitFormResponse(
-    formId: string,
-    answers: Record<string, any>
-  ): Promise<boolean> {
-    await API.post(
-      `/${formId}/responses`,
-      {
-        answers,
-        completionTimeSeconds: 45,
-        device: 'desktop',
-      }
-    );
-
-    return true;
-  },
-
-  // Create a normal form
+  /**
+   * Create a new form in MongoDB.
+   */
   async createForm(
-    title: string,
-    description: string
+    formData: Partial<Form>
   ): Promise<Form> {
+
     const response = await API.post(
       '/',
-      {
-        title,
-        description,
-      },
+      formData,
       {
         headers: getAuthHeaders(),
       }
     );
 
-    return mapBackendForm(response.data.data);
+    return normalizeForm(response.data.data);
   },
 
-  // Update form
+  /**
+   * Update an existing form.
+   */
   async updateForm(
-    formId: string,
+    id: string,
     updates: Partial<Form>
   ): Promise<Form> {
+
     const response = await API.put(
-      `/${formId}`,
+      `/${id}`,
       updates,
       {
         headers: getAuthHeaders(),
       }
     );
 
-    return mapBackendForm(response.data.data);
+    return normalizeForm(response.data.data);
   },
 
-  // Delete form
-  async deleteForm(formId: string): Promise<boolean> {
+  /**
+   * Delete a form.
+   */
+  async deleteForm(id: string): Promise<boolean> {
+
     await API.delete(
-      `/${formId}`,
+      `/${id}`,
       {
         headers: getAuthHeaders(),
       }
     );
 
     return true;
+  },
+
+  /**
+   * Generate a form using the real AI backend.
+   */
+ async generateFormWithAI(prompt: string): Promise<Form> {
+  const response = await API.post(
+    '/generate',
+    { prompt },
+    {
+      headers: getAuthHeaders(),
+    }
+  );
+
+  return normalizeForm(response.data.data);
+},
+
+  /**
+   * Get responses for a form.
+   */
+  async getFormResponses(
+    formId: string
+  ): Promise<FormSubmission[]> {
+
+    const response = await API.get(
+      `/${formId}/responses`
+    );
+
+    return response.data?.data || [];
+  },
+
+  /**
+   * Submit a response to a form.
+   */
+  async submitFormResponse(
+    formId: string,
+    answers: Record<string, any>,
+    respondentEmail?: string,
+    completionTimeSeconds?: number,
+    device: 'desktop' | 'mobile' | 'tablet' = 'desktop'
+  ): Promise<FormSubmission> {
+
+    const response = await API.post(
+      `/${formId}/responses`,
+      {
+        answers,
+        respondentEmail,
+        completionTimeSeconds,
+        device,
+      }
+    );
+
+    return response.data.data;
   },
 };

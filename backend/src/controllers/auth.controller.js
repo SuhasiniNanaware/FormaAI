@@ -162,11 +162,7 @@ exports.login = async (req, res) => {
             password
         );
 
-        // httpOnly cookie for browser clients (cookie-parser is already
-        // wired into app.js). The token is ALSO returned in the JSON body
-        // below so non-browser clients (Postman, a mobile app, tests) that
-        // can't rely on cookies can send it as a Bearer header instead -
-        // authMiddleware accepts either.
+      
         res.cookie("token", user.token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -191,5 +187,53 @@ exports.login = async (req, res) => {
             )
         );
 
+    }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    await authService.createPasswordResetToken(email);
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "If an account exists with that email, a password reset link has been sent.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+exports.resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return res.status(400).json(
+                new ApiResponse(
+                    false,
+                    "Token and new password are required"
+                )
+            );
+        }
+
+        await authService.resetPassword(token, newPassword);
+
+        return res.status(200).json(
+            new ApiResponse(
+                true,
+                "Password reset successfully"
+            )
+        );
+    } catch (error) {
+        return res.status(400).json(
+            new ApiResponse(false, error.message)
+        );
     }
 };
